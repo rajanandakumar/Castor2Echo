@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+# To be in DOING directory and run as a cron job, maybe once an hour or so
+
 import os
 from os import walk
 from sqlalchemy import Column, String

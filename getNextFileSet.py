@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import time
 
-# Has to be python 2.6.6 compatible, as that is what I am working with right now
+# To be in TODO directory, to be run as and when I feel it - or maybe as a cron job
 
 def writeFileSet(lFiles):
   # lFiles is a list of LFNs which I will then write pairwise into a single file for
@@ -25,6 +25,8 @@ def writeFileSet(lFiles):
 # "/lhcb/LHCb/Collision10/FULL.DST/00037160/0000/00037160_00005496_1.full.dst",
 # "/lhcb/LHCb/Collision10/FULL.DST/00037160/0000/00037160_00005495_1.full.dst"
 # ]
+
+# To make sure that the test fails - do not want to touch the production instance even by mistake
 testList = [ "test1.txt", "test2.castor", "test3.dcache", "test4.root", "test5.xroot", "test6.whatever"]
 
 writeFileSet(testList)

@@ -3,7 +3,8 @@ from sqlalchemy import Column, String, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-ceBase = "/home/ppd/nraja/castorToEcho/"
+ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
+ftsServ = "https://lcgfts3.gridpp.rl.ac.uk:8446"
 
 # The sqlalchemy magic to get the link to the sqlite db (or create it if needed)
 Base = declarative_base()

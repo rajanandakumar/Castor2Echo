@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-from DIRAC.Core.Base.Script import parseCommandLine
-parseCommandLine()
+# from DIRAC.Core.Base.Script import parseCommandLine
+# parseCommandLine()
 
 import time
 import random
 
-ceBase = "/home/ppd/nraja/castorToEcho/"
+ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
 
 # from DIRAC.Resources.Catalog.FileCatalogClient import FileCatalogClient
 # port = random.choice([9196, 9197,9198, 9199])

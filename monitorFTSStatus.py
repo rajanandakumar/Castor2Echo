@@ -28,7 +28,7 @@ def getNewStatus(s, f, fid=""):
     (fid, fstat, fIter) = getStatusForJob(s, f)
   context = fts3.Context(ftsServ)
   ftsStat = fts3.get_job_status(context, fid)
-  print ftsStat
+  # print ftsStat
   return ftsStat["job_state"]
 
 sess = doTheSQLiteAndGetItsPointer()

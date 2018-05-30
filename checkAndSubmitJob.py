@@ -27,7 +27,7 @@ def submitTheFTSJob(ftsFile):
     (sourceSURL, targetSURL) = ftra.split("  ")
     transf = fts3.new_transfer(sourceSURL, targetSURL)
     transfers.append(transf)
-  job = fts3.new_job(transfers=transfers, overwrite=True)
+  job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=True)
   ftsJobID = fts3.submit(context, job)
   return ftsJobID
 

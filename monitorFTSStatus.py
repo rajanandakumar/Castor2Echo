@@ -27,8 +27,9 @@ def getNewStatus(s, f, fid=""):
   if len(fid) < 3 :
     (fid, fstat, fIter) = getStatusForJob(s, f)
   context = fts3.Context(ftsServ)
-  ftsStat = fts3.get_job_status(context, fid)["job_state"]
-  return ftsStat
+  ftsStat = fts3.get_job_status(context, fid)
+  print ftsStat
+  return ftsStat["job_state"]
 
 sess = doTheSQLiteAndGetItsPointer()
 jobFiles = glob.glob(ceBase + "DOING/*.txt")
@@ -43,4 +44,5 @@ for jFile in jobFiles :
     if nIter > 5:
       print "Trouble with files in job", ftsFileName, " with ftsID", ftsJID, " status", status
       # For now leave the files in the DOING directory
-      
+    else:
+      print "Ongoing transfer for ", ftsFileName, " with ftsID", ftsJID, " status", status

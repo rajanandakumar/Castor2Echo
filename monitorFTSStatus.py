@@ -28,7 +28,6 @@ def getNewStatus(s, f, fid=""):
     (fid, fstat, fIter) = getStatusForJob(s, f)
   context = fts3.Context(ftsServ)
   ftsStat = fts3.get_job_status(context, fid)
-  # print ftsStat
   return ftsStat["job_state"]
 
 sess = doTheSQLiteAndGetItsPointer()
@@ -39,6 +38,7 @@ for jFile in jobFiles :
   # This set of files has transferred successfully. Move it to DONE directory
   (nIter, ftsJID) = updateFTSStatusForJob(sess, ftsFileName, status)
   if status == "FINISHED":
+    print "All done for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Okay."
     shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Okay/")
   else :
     if nIter > 5:

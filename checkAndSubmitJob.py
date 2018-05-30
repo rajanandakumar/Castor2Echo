@@ -33,6 +33,7 @@ def submitTheFTSJob(ftsFile):
 
 theFile = copyFTSFileJob().split("/")[-1]
 ftsJobID = submitTheFTSJob(theFile)
+print "Submitted file : ", theFile, " with fts ID : ", ftsJobID
 
 #Now I have a pair - write them to the SQLite DB.
 sess = doTheSQLiteAndGetItsPointer()

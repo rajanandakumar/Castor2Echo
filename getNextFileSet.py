@@ -7,8 +7,8 @@ import os
 import time
 
 ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
-nLFNs = 20
-lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_2.txt"
+nLFNs = 10
+lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_0.txt"
 
 # To be in TODO directory, to be run as and when I feel it - or maybe as a cron job
 

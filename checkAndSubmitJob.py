@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # To be in DOING directory and run as a cron job, maybe once an hour or so
-import os, sys, glob, shutil
+import os, sys, glob, shutil, random
 
 ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
 sys.path.append(ceBase)
@@ -19,6 +19,7 @@ def copyFTSFileJob():
 
 # Submit the FTS job to the FTS server and retrieve the FTS job ID
 def submitTheFTSJob(ftsFile):
+  ftsServ = random.choice([ftsServ1, ftsServ2])
   context = fts3.Context(ftsServ)
   filecontent = open(ceBase + "DOING/" + ftsFile).read().split("\n")
   transfers = []
@@ -27,16 +28,16 @@ def submitTheFTSJob(ftsFile):
     (sourceSURL, targetSURL) = ftra.split("  ")
     transf = fts3.new_transfer(sourceSURL, targetSURL)
     transfers.append(transf)
-  job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=True)
+  job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=True, retry=5)
   ftsJobID = fts3.submit(context, job)
-  return ftsJobID
+  return ftsJobID, ftsServ
 
 theFile = copyFTSFileJob().split("/")[-1]
-ftsJobID = submitTheFTSJob(theFile)
-print "Submitted file : ", theFile, " with fts ID : ", ftsJobID
+ftsJobID, ftsServ = submitTheFTSJob(theFile)
+print "Submitted file : ", theFile, " with fts ID : ", ftsJobID, " to server ", ftsServ
 
 #Now I have a pair - write them to the SQLite DB.
 sess = doTheSQLiteAndGetItsPointer()
-newJob = ftsjob(ftsFile=theFile, ftsID=ftsJobID, ftsStatus="submitted", ftsIter=0)
+newJob = ftsjob(ftsFile=theFile, ftsID=ftsJobID, ftsStatus="submitted", ftsIter=0, ftsServer=ftsServ)
 sess.add(newJob)
 sess.commit()

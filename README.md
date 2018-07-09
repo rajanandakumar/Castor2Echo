@@ -13,7 +13,7 @@ The above three processes should be run as cron jobs on lxplus7, using virtualen
 1. The producer and consumer are run from within a single "consumer.sh" cron script to run once every 2 hours. This is because each of the producer and consumer scripts acts on a single file. Each transfer attempts 20 LFNs currently (configurable in getNextFileSet.py)
 2. The Monitor script looks at all pending transfers. It is run every 2 hours.
 
-Other scripts (in the misc directory here) are written to perform one-time actions as needed.
+Other scripts (in the "misc" directory) are written to perform one-time actions as needed.
 
 ## Monitor script
 The monitoring script checks and performs the following actions :

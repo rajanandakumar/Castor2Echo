@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # from DIRAC.Core.Base.Script import parseCommandLine
 # parseCommandLine()
@@ -7,8 +7,10 @@ import os
 import time
 
 ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
-nLFNs = 10
-lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_0.txt"
+nLFNs = 100
+# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_0.txt"
+# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_1.txt"
+lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/MC-DST_30.05.18_2.txt"
 
 # To be in TODO directory, to be run as and when I feel it - or maybe as a cron job
 
@@ -19,7 +21,7 @@ def writeFileSet(lFiles):
   echoPrefix = "gsiftp://gridftp.echo.stfc.ac.uk/lhcb:prod"
   timestr = time.strftime("%d%m%Y-%H%M%S")
   ftsFileList = "FTSList-" + timestr + ".txt"
-  print ftsFileList
+  # print ftsFileList
   fFTS = open(ceBase + "TODO/" + ftsFileList, "w")
   for line in lFiles:
     if len(line) < 10:

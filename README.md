@@ -3,7 +3,7 @@ Collection of scripts to ease migration from Castor to Echo at RAL.
 Follow the standard (classical) procedure of DAQ, with the "files to be transferred" as our target.
 
 The (minimal) structure of the directory is below. Everything without an extension (sh or py) is a directory
-
+```
 ├── cronjobs
 │   ├── consumer.sh
 │   ├── monitor.sh
@@ -19,7 +19,7 @@ The (minimal) structure of the directory is below. Everything without an extensi
 └── TODO
     ├── getNextFileSet.py
     └── ListOfLFNs
-
+```
 We have the following files which drive the copy:
 
 1. `Producer` (getNextFileSet.py) : Produces a time-stamped file containing the list of files to be transferred from Castor to Echo and saves it in the directory "TODO"

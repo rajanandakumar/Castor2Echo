@@ -16,6 +16,7 @@ The (minimal) structure of the directory is below. Everything without an extensi
 │   ├── monitorFTSStatus.py
 │   ├── Okay
 ├── ftsJob.py
+├── sqlite_c2e.db
 └── TODO
     └── getNextFileSet.py
 ```
@@ -25,7 +26,7 @@ We have the following files which drive the copy:
 2. `Consumer` (checkAndSubmitJob.py) : Picks up upto 5 files in the "TODO" directory, submits it to either the RAL or CERN FTS server (50% probability) and saves the FTS job ID to a sqlite dB. Then moves the file to the "DOING" directory.
 3. `Monitor` (monitorFTSStatus.py) : Goes over all the open FTS transactions (files in the "DOING" directory) and processes their statuses. Below for more details
 
-The consumer and monitor python files will in addition import a file (ftsJob.py) describing the structure of the sqlite dB where the IDs and statuses of the FTS jobs are stored.
+The consumer and monitor python files will in addition import a file (ftsJob.py) describing the structure of the sqlite dB (sqlite_c2e.db) where the IDs and statuses of the FTS jobs are stored.
 
 The above three processes should be run as cron jobs on lxplus7, using virtualenv to correctly set the FTS3 environment (the FTS3 rest interface does not run on sl6 due to the python version available).
 

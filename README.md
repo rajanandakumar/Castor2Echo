@@ -20,7 +20,8 @@ The (minimal) structure of the directory is below. Everything without an extensi
 └── TODO
     └── getNextFileSet.py
 ```
-We have the following files which drive the copy:
+
+Note that the files in this git repository here are not in the "real" locations (above) where the work is actually done on lxplus. We have the following files which drive the copy:
 
 1. `Producer` (getNextFileSet.py) : Produces a time-stamped file containing the list of files to be transferred from Castor to Echo and saves it in the directory "TODO"
 2. `Consumer` (checkAndSubmitJob.py) : Picks up upto 5 files in the "TODO" directory, submits it to either the RAL or CERN FTS server (50% probability) and saves the FTS job ID to a sqlite dB. Then moves the file to the "DOING" directory.

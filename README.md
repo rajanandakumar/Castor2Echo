@@ -14,7 +14,7 @@ The (minimal) structure of the directory is below. Everything without an extensi
 │   ├── Bad
 │   ├── Dirty
 │   ├── monitorFTSStatus.py
-│   ├── Okay
+│   └── Okay
 ├── ftsJob.py
 ├── sqlite_c2e.db
 └── TODO

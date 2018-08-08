@@ -9,7 +9,7 @@ The (minimal) structure of the directory is below. Everything without an extensi
 │   ├── monitor.sh
 │   └── producer.sh
 ├── DOING
-│   ├── checkAndSubmitJob.py
+│   └── checkAndSubmitJob.py
 ├── DONE
 │   ├── Bad
 │   ├── Dirty
@@ -17,8 +17,7 @@ The (minimal) structure of the directory is below. Everything without an extensi
 │   ├── Okay
 ├── ftsJob.py
 └── TODO
-    ├── getNextFileSet.py
-    └── ListOfLFNs
+    └── getNextFileSet.py
 ```
 We have the following files which drive the copy:
 

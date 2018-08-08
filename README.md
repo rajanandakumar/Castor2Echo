@@ -36,7 +36,7 @@ The above three processes should be run as cron jobs on lxplus7, using virtualen
 Other scripts (in the "misc" directory) are written to perform one-time actions as needed.
 
 ## Monitor script
-The monitoring script checks and performs the following actions :
+The monitoring script checks and performs the following actions on files in the DOING directory :
 1. Job not submitted to FTS : Basically no record of job in the local sqlite dB. Move to "TODO" directory and let it get submitted eventually.
 2. FINISHED : Move list of files from "DOING" to "DONE/Okay"
 3. FINISHEDDIRTY : Extract files which finished well and write to "DONE/Okay". Extract bad files (Transfer error "500 No such file or directory") and write to "DONE/bad" for processing by hand. Move rest of files to "TODO" for re-trying the transfer, with a prefix "D" added to the file name to monitor the request by hand.

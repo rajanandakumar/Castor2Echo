@@ -28,7 +28,7 @@ We have the following files which drive the copy:
 
 The consumer and monitor python files will in addition import a file (ftsJob.py) describing the structure of the sqlite dB (sqlite_c2e.db) where the IDs and statuses of the FTS jobs are stored.
 
-The above three processes should be run as cron jobs on lxplus7, using virtualenv to correctly set the FTS3 environment (the FTS3 rest interface does not run on sl6 due to the python version available).
+The above three processes should be run as cron jobs on lxplus7, using virtualenv to correctly set the FTS3 environment (the FTS3 rest interface installation using virtualenv does not run on sl6 due to the python version available).
 
 1. The producer and consumer are run from within a single "consumer.sh" cron script to run once every 2 hours. This is because each of the producer and consumer scripts acts on a single file. Each transfer attempts 20 LFNs currently (configurable in getNextFileSet.py)
 2. The Monitor script looks at all pending transfers. It is run every 2 hours.

@@ -125,7 +125,6 @@ def recoverFINISHEDDIRTY(s, ftsFileName):
 sess = doTheSQLiteAndGetItsPointer()
 jobFiles = glob.glob(ceBase + "DOING/*.txt")
 jobsChecked = []
-nUnknown = 0
 nFinished = 0
 nDirty = 0
 nOther = 0
@@ -134,23 +133,22 @@ nActive = 0
 nSubmitted = 0
 nCancelled = 0
 for jFile in jobFiles :
-  ftsFileName = jFile.split("/")[-1]
+  # ftsFileName = jFile.split("/")[-1]
+  ftsFileName = "DuFTSList-12082018-090522.txt"
   (status, ftsJID, fStat, fServer) = getNewStatus(sess, ftsFileName)
+  context = fts3.Context(fServer)
+  # This set of files has transferred successfully. Move it to DONE directory
+  (nIter, ftsJID) = updateFTSStatusForJob(sess, ftsFileName, status)
   if fServer != "-1":
-    context = fts3.Context(fServer)
-    # This set of files has transferred successfully. Move it to DONE directory
-    (nIter, ftsJID) = updateFTSStatusForJob(sess, ftsFileName, status)
     jobsChecked.append((ftsFileName, status, fServer, ftsJID))
   else :
-    if nUnknown < 10:
-      print "File ", ftsFileName, "not submitted to FTS? Moving back to TODO"
-      # print "Status : ", status
-      # print "FTSID : ", ftsJID
-      # print "FTS job latest status:", fStat
-      # print "FTS server:", fServer
-      # # print "NIterations:", nIter
+    print "File ", ftsFileName, "not submitted to FTS? Moving back to TODO"
+    print "Status : ", status
+    print "FTSID : ", ftsJID
+    print "FTS job latest status:", fStat
+    print "FTS server:", fServer
+    print "NIterations:", nIter
     shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" +ftsFileName)
-    nUnknown = nUnknown + 1
     continue
   if status == "FINISHED":
     if nFinished < 10:
@@ -168,34 +166,30 @@ for jFile in jobFiles :
     nActive = nActive + 1
   elif status == "FAILED":
     print "Failed transfer : ",
-    ##### Temporarily treat these files separately. They all are failing due to missing files.
-    print "Failure for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Bad."
-    shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Bad/")
-    ######
-    # if ftsFileName.startswith("R-") or ftsFileName.startswith("uuu") or ftsFileName.startswith("DD"):
-    #   # Likely pathologically bad. To be checked
-    #   if nFailed < 10:
-    #     print "Bad failure for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Bad."
-    #   shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Bad/")
-    # else:
-    #   # Try again
-    #   if nFailed < 10:
-    #     print " Not so bad failure for ", ftsFileName, " with ftsID", ftsJID, ". Try again."
-    #   shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
+    if ftsFileName.startswith("R-") or ftsFileName.startswith("uuu") or ftsFileName.startswith("DD"):
+      # Likely pathologically bad. To be checked
+      if nFailed < 10:
+        print "Bad failure for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Bad."
+      shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Bad/")
+    else:
+      # Try again
+      if nFailed < 10:
+        print " Not so bad failure for ", ftsFileName, " with ftsID", ftsJID, ". Try again."
+      shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
     nFailed = nFailed + 1
   elif status == "SUBMITTED":
-    if (nSubmitted < 10) :# or ("cern" in fServer):
+    if (nSubmitted < 10) or ("cern" in fServer):
       print "Waiting to be picked up by FTS :", ftsFileName, " : ", fServer[:-1] + "9/fts3/ftsmon/#/job/" + ftsJID
     # Cancel jobs submitted to the CERN FTS server. We are asked to run on the RAL FTS server only which will be able
     # to better manage the load on ECHO
-    # if "cern" in fServer:
-      # print "Cancelling job : ", ftsJID, " file :", ftsFileName
-      # stat = fts3.cancel(context, ftsJID)
+    if "cern" in fServer:
+      print "Cancelling job : ", ftsJID, " file :", ftsFileName
+      stat = fts3.cancel(context, ftsJID)
     nSubmitted = nSubmitted + 1
   elif status == "CANCELED":
     if nCancelled < 10:
-      print "Job ", ftsJID, " has been cancelled by me (?) - move it back to TODO for resubmission"
-    shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
+      print "Job has been cancelled by me (?)            - move it back to TODO for resubmission"
+      shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
     nCancelled = nCancelled + 1
   else :
     # if nIter > 5:
@@ -205,7 +199,7 @@ for jFile in jobFiles :
     if nOther < 10:
       print "Ongoing transfer for ", ftsFileName, " with ftsID", ftsJID, " status", status, " on server", fServer
     nOther = nOther + 1
-
+  break
 print
 print "Summary of Transfers"
 print "ACTIVE : ", nActive

@@ -4,6 +4,9 @@
 # export X509_USER_PROXY=/afs/cern.ch/user/n/nraja/.globus/c2eMig.temp
 # export X509_CERT_DIR=/etc/grid-security/certificates
 # export X509_VOMS_DIR=/etc/grid-security/vomsdir
+# lb-run -c best LHCbDirac/prod bash -f << EEEE
+# cat ${HOME}/.lcgpasswd | lhcb-proxy-init --valid 24:00 --pwstdin
+# EEEE
 
 cd /afs/cern.ch/work/n/nraja/public/castor2echo
 python /afs/cern.ch/work/n/nraja/public/castor2echo/TODO/getNextFileSet.py

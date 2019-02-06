@@ -2,10 +2,13 @@
 import os, sys
 import tempfile
 from itertools import islice
-import subprocess
+import subprocess, shlex
 
-echoPrefix = "gsiftp://gridftp.echo.stfc.ac.uk/lhcb:"
-dirPrefix = "/afs/cern.ch/work/n/nraja/public/castor2echo/Re-Sync/cmp-19Dec2018/removalTmp/delStatus-"
+locDir = "cmp-29Jan2019"
+nToDelete = 50
+echoServer = "gsiftp://gridftp.echo.stfc.ac.uk"
+echoPrefix = echoServer + "/lhcb:"
+dirPrefix = "/afs/cern.ch/work/n/nraja/public/castor2echo/Re-Sync/" + locDir + "/removalTmp/delStatus-"
 tmpFileName = dirPrefix + next(tempfile._get_candidate_names())
 failedDeletion = []
 
@@ -13,13 +16,15 @@ def doTheDeletion(lFiles):
     lFiles = [echoPrefix + line.strip() for line in lFiles]
     longFileList = " ".join(lFiles)
     # delCommand = "gfal-rm --bulk " + longFileList
-    delCommand = "gfal-rm " + longFileList
-    # print delCommand
+    delCommand = "gfal-rm -vvv --bulk " + longFileList
+    print delCommand
     # os.system(delCommand)
-    runComm = subprocess.Popen(delCommand, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+    runComm = subprocess.Popen(shlex.split(delCommand), shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
     theInfo = runComm.communicate()[0].strip()
-    # print theInfo
+    print shlex.split(delCommand)
+    print theInfo
     return theInfo
+    # return "00000000"
 
 def processDelOutput(dOut):
     bulkStat = dOut.split("\n")
@@ -47,29 +52,20 @@ def deleteBunch(fS, retry=0):
     if retry == 1: failedDeletion[:] = []
     processDelOutput(delStatus)
 
-with open("dataToBeRemoved-DST-MCDST.list") as f:
+kount = 11
+with open("dataToBeRemoved-1.list") as f:
     x = 0
     while True:
-        fileSet = list(islice(f, 100))
+        fileSet = list(islice(f, nToDelete))
         if not fileSet:
             break
         x += 1
-        print x, len(failedDeletion), 100*(x-1), float(len(failedDeletion))/100*(x-1) 
-        deleteBunch(fileSet)
-        if len(failedDeletion) > 50:
-            deleteBunch(failedDeletion, retry=1)
-        # if x>100: break
-deleteBunch(failedDeletion, retry=1)
-print failedDeletion
-
-
-
-    # for line in f:
-    #     pfn = echoPrefix + line.strip()
-    #     command = "gfal-rm "
-    #     os.system(command + pfn)
-    #     # tmpFileName = dirPrefix + next(tempfile._get_candidate_names())
-    #     # print tmpFileName
-    #     x += 1
-    #     if x>100 : sys.exit()
-
+        print x, len(failedDeletion), nToDelete*(x-1), float(len(failedDeletion))*(x-1)/nToDelete 
+        if x > kount:
+            # print fileSet
+            deleteBunch(fileSet)
+        # if len(failedDeletion) > 50:
+        #     deleteBunch(failedDeletion, retry=1)
+        if x > kount: break
+# deleteBunch(failedDeletion, retry=1)
+# print failedDeletion

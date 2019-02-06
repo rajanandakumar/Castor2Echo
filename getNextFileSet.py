@@ -5,16 +5,21 @@
 
 import os, sys
 import subprocess
-import time
+import time, glob
 
 ceBase = "/afs/cern.ch/work/n/nraja/public/castor2echo/"
 nLFNs = 100
-# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/RAL-USER.list"
-# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/RAL-Buffer.list"
-# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/reSync-DST-MCDST-19Dec2018.list"
-# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/reSync-DST-15Jan2019.list"
-# lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/reSync-MC-DST-16Jan2019.list"
-lfnListFile = "/afs/cern.ch/work/n/nraja/public/castor2echo/TODO/ListOfLFNs/reSync-USER-17Jan2019.list"
+
+def getNextFileName():
+  # jFiles = ceBase + "TODO/ListOfLFNs/reSync-USER-17Jan2019.list"
+  # jFiles = glob.glob(ceBase + "TODO/ListOfLFNs/reSync-USER-17Jan2019" + ".a*")
+  jFiles = glob.glob(ceBase + "TODO/ListOfLFNs/RAL-BUFFER-06Feb2019.list")
+  sortedFiles = sorted(jFiles, key=str.swapcase)
+  for onefile in sortedFiles:
+    if os.stat(onefile).st_size == 0 : continue
+    return onefile
+  # If we are here, all the files are empty
+  return -1
 
 # To be in TODO directory, to be run as and when I feel it - or maybe as a cron job
 
@@ -22,6 +27,7 @@ def writeFileSet(lFiles, pref):
   # lFiles is a list of LFNs which I will then write pairwise into a single file for
   # submission as an fts job
   castorPrefix = "srm://srm-lhcb.gridpp.rl.ac.uk:8443/srm/managerv2?SFN=/castor/ads.rl.ac.uk/prod"
+  if prefix == "buffer" : castorPrefix = castorPrefix + "/lhcb/buffer"
   echoPrefix = "gsiftp://gridftp.echo.stfc.ac.uk/lhcb:" + pref
   timestr = time.strftime("%d%m%Y-%H%M%S")
   ftsFileList = "FTSList-" + timestr + ".txt"
@@ -57,8 +63,10 @@ def writeFileSet(lFiles, pref):
 # testList = [ "test1.txt", "test2.castor", "test3.dcache", "test4.root", "test5.xroot", "test6.whatever"]
 
 # Get the first nLFNs lines first
-if os.stat(lfnListFile).st_size == 0 :
-  sys.exit()
+lfnListFile = getNextFileName()
+if lfnListFile == -1:
+  print "No files remaining to transfer"
+  sys.exit(0)
 com1 = "head -n %s %s" %(str(nLFNs), lfnListFile)
 testList = os.popen(com1).read().strip().split("\n")
 # Remove the first nLFNs lines from the file

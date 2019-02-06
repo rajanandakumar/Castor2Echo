@@ -52,12 +52,13 @@ def updateFTSStatusForJob(s, f, stat):
   return (uIter, uID)
 
 # Get the new status of the job from FTS
-def getNewStatus(s, f, fid=""):
+def getNewStatus(s, f, fid="", context=0):
   if len(fid) < 3 :
     (fid, fstat, fIter, fServer) = getStatusForJob(s, f)
   if fid == "-1":
     return "Unknown-notsubmitted", -1, 0, "-1"
-  context = fts3.Context(fServer)
+  if context == 0:
+    context = fts3.Context(fServer)
   try:
     ftsStat = fts3.get_job_status(context, fid)
     return ftsStat["job_state"], fid, ftsStat, fServer
@@ -93,14 +94,15 @@ def writeTransfer(fFiles, fDir, fPrefix, ftsFileName):
     fFTS.write(line[0] + "  " + line[1] + "\n")
   fFTS.close()
 
-def recoverFINISHEDDIRTY(s, ftsFileName):
-  (status, ftsJID, fStat, fServer) = getNewStatus(s, ftsFileName)
+def recoverFINISHEDDIRTY(s, context, ftsFileName):
+  (status, ftsJID, fStat, fServer) = getNewStatus(s, ftsFileName, context=context)
   # This set of files has transferred successfully. Move it to DONE directory
   # print "Finished dirty for ", ftsFileName, " with ftsID", ftsJID, " status", status, "."  
-  context = fts3.Context(fServer)
+  # context = fts3.Context(fServer)
   jobStat = fts3.get_job_status(context, ftsJID, list_files=True)
   failedFiles = []
   missFiles = []
+  kor = 0
   for fileInfo in jobStat['files']:
     if fileInfo["file_state"] == "FINISHED": continue
     reason = fileInfo["reason"]
@@ -113,14 +115,15 @@ def recoverFINISHEDDIRTY(s, ftsFileName):
       print fServer[:-1] + "9/fts3/ftsmon/#/job/" + ftsJID
       missFiles.append((fileInfo["source_surl"], fileInfo["dest_surl"]))
     else:
-      print ftsFileName, fileInfo["source_surl"], fileInfo["reason"][:50]
+      kor = kor + 1
+      if kor < 2:
+        print ftsFileName, fileInfo["source_surl"], fileInfo["reason"][:50]
       failedFiles.append((fileInfo["source_surl"], fileInfo["dest_surl"]))
   # print failedFiles
   cleanUpTransfer(failedFiles, ftsFileName)
   writeTransfer(failedFiles, "TODO/", "D", ftsFileName)
   writeTransfer(missFiles, "DONE/Bad/", "M", ftsFileName)
   # writeTransfer(missFiles, "TODO/", "M", ftsFileName)
-
 
 sess = doTheSQLiteAndGetItsPointer()
 jobFiles = glob.glob(ceBase + "DOING/*.txt")
@@ -133,37 +136,41 @@ nFailed = 0
 nActive = 0
 nSubmitted = 0
 nCancelled = 0
+kount =0
 for jFile in jobFiles :
+  kount = kount + 1
+  if kount > 1000 : break
   ftsFileName = jFile.split("/")[-1]
   (status, ftsJID, fStat, fServer) = getNewStatus(sess, ftsFileName)
-  if fServer != "-1":
+  try:
     context = fts3.Context(fServer)
+  except Exception, e:
+    print "Exception creating FTS context ", e
+    print "Retry the transfer ..."
+    shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" +ftsFileName)
+    continue
+  if fServer != "-1":
     # This set of files has transferred successfully. Move it to DONE directory
     (nIter, ftsJID) = updateFTSStatusForJob(sess, ftsFileName, status)
     jobsChecked.append((ftsFileName, status, fServer, ftsJID))
   else :
-    if nUnknown < 10:
+    if nUnknown < 2:
       print "File ", ftsFileName, "not submitted to FTS? Moving back to TODO"
-      # print "Status : ", status
-      # print "FTSID : ", ftsJID
-      # print "FTS job latest status:", fStat
-      # print "FTS server:", fServer
-      # # print "NIterations:", nIter
     shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" +ftsFileName)
     nUnknown = nUnknown + 1
     continue
   if status == "FINISHED":
-    if nFinished < 10:
+    if nFinished < 2:
       print "All done for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Okay."
     shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Okay/")
     nFinished = nFinished + 1
   elif status == "FINISHEDDIRTY":
-    if nDirty < 10:
+    if nDirty < 2:
       print "Finished dirty for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Retrying failed files."
-    recoverFINISHEDDIRTY(sess, ftsFileName)
+    recoverFINISHEDDIRTY(sess, context, ftsFileName)
     nDirty = nDirty + 1
   elif status == "ACTIVE":
-    if nActive < 10:
+    if nActive < 2:
       print "Ongoing transfer for ", ftsFileName, " : ", fServer[:-1] + "9/fts3/ftsmon/#/job/" + ftsJID
     nActive = nActive + 1
   elif status == "FAILED":
@@ -174,17 +181,17 @@ for jFile in jobFiles :
     ######
     # if ftsFileName.startswith("R-") or ftsFileName.startswith("uuu") or ftsFileName.startswith("DD"):
     #   # Likely pathologically bad. To be checked
-    #   if nFailed < 10:
+    #   if nFailed < 2:
     #     print "Bad failure for ", ftsFileName, " with ftsID", ftsJID, " status", status, ". Moving to DONE/Bad."
     #   shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "DONE/Bad/")
     # else:
     #   # Try again
-    #   if nFailed < 10:
+    #   if nFailed < 2:
     #     print " Not so bad failure for ", ftsFileName, " with ftsID", ftsJID, ". Try again."
     #   shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
     nFailed = nFailed + 1
   elif status == "SUBMITTED":
-    if (nSubmitted < 10) :# or ("cern" in fServer):
+    if (nSubmitted < 2) :# or ("cern" in fServer):
       print "Waiting to be picked up by FTS :", ftsFileName, " : ", fServer[:-1] + "9/fts3/ftsmon/#/job/" + ftsJID
     # Cancel jobs submitted to the CERN FTS server. We are asked to run on the RAL FTS server only which will be able
     # to better manage the load on ECHO
@@ -193,7 +200,7 @@ for jFile in jobFiles :
       # stat = fts3.cancel(context, ftsJID)
     nSubmitted = nSubmitted + 1
   elif status == "CANCELED":
-    if nCancelled < 10:
+    if nCancelled < 2:
       print "Job ", ftsJID, " has been cancelled by me (?) - move it back to TODO for resubmission"
     shutil.move(ceBase + "DOING/" + ftsFileName, ceBase + "TODO/u" + ftsFileName)
     nCancelled = nCancelled + 1
@@ -202,7 +209,7 @@ for jFile in jobFiles :
     #   print "Trouble with files in job", ftsFileName, " with ftsID", ftsJID, " status", status, " on server", fServer
     #   # For now leave the files in the DOING directory
     # else:
-    if nOther < 10:
+    if nOther < 2:
       print "Ongoing transfer for ", ftsFileName, " with ftsID", ftsJID, " status", status, " on server", fServer
     nOther = nOther + 1
 

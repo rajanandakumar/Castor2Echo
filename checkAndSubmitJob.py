@@ -12,10 +12,16 @@ import fts3.rest.client as fsubmit
 
 # Submit the FTS job to the FTS server and retrieve the FTS job ID
 def submitTheFTSJob(ftsFile):
+  ### First way : Random choice of two servers
   # ftsServ = random.choice([ftsServ1, ftsServ2])
-  rndValue = random.uniform(0.0,1.0)
-  ftsServ = ftsServ1
-  if rndValue < 0.5 : ftsServ = ftsServ2
+  ### Second way : Weighted choice of two servers
+  # rndValue = random.uniform(0.0,1.0)
+  # ftsServ = ftsServ1
+  # if rndValue < 0.7 : ftsServ = ftsServ2
+  ### Third way : Random choice of three servers
+  fList = [ftsServ1, ftsServ2, ftsServ3]
+  ftsServ = random.choice(fList)
+  #
   context = fts3.Context(ftsServ)
   filecontent = open(ceBase + "DOING/" + ftsFile).read().split("\n")
   transfers = []
@@ -32,10 +38,13 @@ def submitTheFTSJob(ftsFile):
     else:
       transf = fts3.new_transfer(sourceSURL, targetSURL)
       transfers.append(transf)
+    # transf = fts3.new_transfer(sourceSURL, targetSURL)
+    # transfers.append(transf)
   if len(transfers) > 0:
     # job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=True, retry=5)
-    job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=False, retry=5) # requested by Andrea Manzi
-    ftsJobID = fts3.submit(context, job)
+    # job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=False, retry=5) # requested by Andrea Manzi
+    job = fts3.new_job(transfers=transfers, overwrite=True, verify_checksum=True, reuse=False, retry=0) # To avoid deleted files snarling up the system for hours
+    ftsJobID = fts3.submit(context, job, delegation_lifetime=fts3.timedelta(hours=72))
     return ftsJobID, ftsServ
   else:
     return "-1", "-1"
